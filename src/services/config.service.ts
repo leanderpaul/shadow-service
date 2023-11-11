@@ -6,10 +6,20 @@ import os from 'os';
 /**
  * Importing user defined packages
  */
+import { Utils } from '@lib/internal.utils';
 
 /**
  * Defining types
  */
+
+interface ConfigOptions {
+  isProdRequired?: boolean;
+  validateType?: 'number' | 'boolean';
+  validator?: (value: string) => boolean;
+  defaultValue?: string;
+  allowedValues?: string[];
+  transform?: (value: string) => any;
+}
 
 type NodeEnv = 'development' | 'production' | 'test';
 
@@ -21,16 +31,10 @@ export interface ConfigRecords extends Record<string, any> {
   /** Application configs */
   'app.env': NodeEnv;
   'app.name': string;
-  'app.hostname': string;
-  'app.port': number;
-  'app.domain': string;
 
   /** Log configs */
   'log.level': LogLevel;
   'log.dir': string;
-
-  /** Database configs */
-  'db.uri': string;
 
   /** Mail service configs */
   'mail.sendgrid.apikey': Nullable<string>;
@@ -40,104 +44,55 @@ export interface ConfigRecords extends Record<string, any> {
   'aws.cloudwatch.log-group': string;
   'aws.cloudwatch.log-stream': string;
   'aws.cloudwatch.upload-rate': number;
-
-  /** Authentication configs */
-  'cookie.name': string;
-  'cookie.max-age': number;
-  'csrf.secret-key': Buffer;
-  'refresh-token.secret-key': Buffer;
 }
 
 /**
  * Declaring the constants
  */
 const isProd = process.env.NODE_ENV === 'production';
-const validNodeEnvs = ['development', 'production', 'test'];
-const validLogLevels = ['silly', 'debug', 'http', 'info', 'warn', 'error'];
 
 export class ConfigService<Configs extends ConfigRecords> {
-  private readonly cache;
+  private readonly cache = new Map<keyof Configs, any>();
 
-  static get(name: string, defaultValue: string, isProdRequried?: boolean, validator?: (value: string) => boolean): string;
-  static get(name: string, defaultValue?: string | null, isProdRequried?: boolean, validator?: (value: string) => boolean): string | null;
-  static get(name: string, defaultValue?: string | null, isProdRequried = false, validator?: (value: string) => boolean): string | null {
-    let value = process.env[name];
+  protected set(name: string, opts: ConfigOptions = {}): void {
+    let value = process.env[name]?.trim();
     if (!value) {
-      if (isProd && isProdRequried) throw new Error(`Environment Variable '${name}' not set`);
-      else if (defaultValue) value = defaultValue;
+      if (isProd && opts.isProdRequired) Utils.exit(`Environment Variable '${name}' not set`);
+      else if (opts.defaultValue) value = opts.defaultValue;
     }
-    if (!value && defaultValue !== null) throw new Error(`Environment Variable '${name}' not set`);
-    if (validator && value && !validator(value)) throw new Error(`Environment Variable '${name}' is invalid`);
-    return value ?? null;
+    if (!value) return;
+
+    if (opts.allowedValues && !opts.allowedValues.includes(value)) {
+      const allowedValues = opts.allowedValues.map(val => `'${val}'`).join(', ');
+      Utils.exit(`Environment Variable '${name}' is invalid, must be one of [${allowedValues}]`);
+    }
+    if (opts.validator && !opts.validator(value)) Utils.exit(`Environment Variable '${name}' is invalid, validator failed`);
+    if (!opts.validateType) this.cache.set(name, opts.transform ? opts.transform(value) : value);
+
+    let typedValue: number | boolean;
+    if (opts.validateType === 'number') {
+      typedValue = Number(value);
+      if (isNaN(typedValue)) Utils.exit(`Environment Variable '${name}' is invalid, must be a number`);
+    } else {
+      if (!['true', 'false'].includes(value)) Utils.exit(`Environment Variable '${name}' is invalid, must be a boolean`);
+      typedValue = value === 'true';
+    }
+    this.cache.set(name, typedValue);
   }
 
-  static getTyped(name: string, type: 'number', defaultValue: number, isProdRequried?: boolean): number;
-  static getTyped(name: string, type: 'number', defaultValue?: number, isProdRequried?: boolean): number | null;
-  static getTyped(name: string, type: 'boolean', defaultValue: boolean, isProdRequried?: boolean): boolean;
-  static getTyped(name: string, type: 'number' | 'boolean', defaultValue?: number | boolean, isProdRequried = false): number | boolean | null {
-    const value = process.env[name];
-    if (!value && isProd && isProdRequried) throw new Error(`Environment Variable '${name}' not set`);
-    const typedValue = !value ? defaultValue : type === 'number' ? Number(value) : Boolean(value);
-    if (typedValue === undefined) throw new Error(`Environment Variable '${name}' not set`);
-    if (!typedValue) throw new Error(`Environment Variable '${name}' is invalid`);
-    return typedValue ?? null;
-  }
+  constructor(defaultAppName: string) {
+    this.set('NODE_ENV', { allowedValues: ['development', 'production', 'test'], defaultValue: 'development', isProdRequired: true });
+    this.set('APP_NAME', { defaultValue: defaultAppName });
 
-  static getComplexType<T>(name: string, validator: (value: string) => T | false, defaultValue?: string | null, isProdRequried?: boolean): T;
-  static getComplexType<T>(name: string, validator: (value: string) => T | false, defaultValue?: string | null, isProdRequried?: boolean): T | null;
-  static getComplexType<T>(name: string, validator: (value: string) => T | false, defaultValue?: string | null, isProdRequried = false): T | null {
-    const validate = (value: string) => validator(value) !== false;
-    const value = this.get(name, defaultValue, isProdRequried, validate);
-    const typedValue = value ? validator(value) : null;
-    return typedValue as T | null;
-  }
+    this.set('LOG_LEVEL', { allowedValues: ['silly', 'debug', 'http', 'info', 'warn', 'error'], defaultValue: 'info' });
+    this.set('LOG_DIR', { defaultValue: 'logs' });
 
-  constructor() {
-    const cache = new Map<keyof Configs, any>();
-    this.cache = cache;
+    this.set('MAIL_SENDGRID_APIKEY');
 
-    const nodeEnv = ConfigService.get('NODE_ENV', 'development', false, value => validNodeEnvs.includes(value));
-    cache.set('app.env', nodeEnv);
-    const appName = ConfigService.get('APP_NAME', 'shadow-archive');
-    cache.set('app.name', appName);
-    const hostname = ConfigService.get('HOST_NAME', '0.0.0.0');
-    cache.set('app.hostname', hostname);
-    const port = ConfigService.getTyped('PORT', 'number', 8080);
-    cache.set('app.port', port);
-    const domain = ConfigService.get('DOMAIN', 'dev.shadow-apps.com');
-    cache.set('app.domain', domain);
-
-    const logLevel = ConfigService.get('LOG_LEVEL', 'http', false, value => validLogLevels.includes(value));
-    cache.set('log.level', logLevel);
-    const logDir = ConfigService.get('LOG_DIR', 'logs');
-    cache.set('log.dir', logDir);
-
-    const dburi = ConfigService.get('DB_URI', 'mongodb://localhost/shadow-database', true);
-    cache.set('db.uri', dburi);
-
-    const sendgridApikey = ConfigService.get('SENDGRID_API_KEY', null, true);
-    cache.set('mail.sendgrid.apikey', sendgridApikey);
-
-    const awsRegion = ConfigService.get('AWS_REGION', 'ap-south-1');
-    cache.set('aws.region', awsRegion);
-    const cloudwatchLogGroup = ConfigService.get('AWS_CLOUDWATCH_LOG_GROUP', 'shadow-archive');
-    cache.set('aws.cloudwatch.log-group', cloudwatchLogGroup);
-    const defaultLogStream = os.networkInterfaces().eth0?.find(info => info.family === 'IPv4')?.address ?? 'unknown-ip';
-    const cloudwatchLogStream = ConfigService.get('AWS_CLOUDWATCH_LOG_STREAM', defaultLogStream);
-    cache.set('aws.cloudwatch.log-stream', cloudwatchLogStream);
-    const cloudwatchUploadRate = ConfigService.getTyped('AWS_CLOUDWATCH_UPLOAD_RATE', 'number', 2000);
-    cache.set('aws.cloudwatch.upload-rate', cloudwatchUploadRate);
-
-    const cookieName = ConfigService.get('COOKIE_NAME', 'sasid');
-    cache.set('cookie.name', cookieName);
-    const cookieMaxAge = ConfigService.getTyped('COOKIE_MAX_AGE', 'number', 10 * 24 * 60 * 60);
-    cache.set('cookie.max-age', cookieMaxAge);
-
-    const secretKeyValidator = (value: string): Buffer | false => (Buffer.from(value, 'base64').length === 32 ? Buffer.from(value, 'base64') : false);
-    const csrfSecretKey = ConfigService.getComplexType('CSRF_SECRET_KEY', secretKeyValidator, 'wiJVTyl+XrTOm5SBbZxs0o8QdSLljAFRV7F01D9bFKA=', true);
-    cache.set('csrf.secret-key', csrfSecretKey);
-    const refreshTokenSecretKey = ConfigService.getComplexType('REFRESH_TOKEN_SECRET_KEY', secretKeyValidator, 'IPYNiQFG8Q4URcbSyjwXDgWG6pnjDuLhDpGV9ybKgU0=', true);
-    cache.set('refresh-token.secret-key', refreshTokenSecretKey);
+    this.set('AWS_REGION', { defaultValue: 'ap-south-1' });
+    this.set('AWS_CLOUDWATCH_LOG_GROUP', { defaultValue: defaultAppName });
+    this.set('AWS_CLOUDWATCH_LOG_STREAM', { defaultValue: os.networkInterfaces().eth0?.find(info => info.family === 'IPv4')?.address ?? 'unknown-ip' });
+    this.set('AWS_CLOUDWATCH_UPLOAD_RATE', { defaultValue: '2000', validateType: 'number' });
   }
 
   isProd(): boolean {
@@ -158,7 +113,7 @@ export class ConfigService<Configs extends ConfigRecords> {
 
   getOrThrow<T extends keyof Configs>(key: T): Exclude<Configs[T], null> {
     const value = this.cache.get(key);
-    if (value === null) throw new Error(`Expected config value for '${key.toString()}' to be set`);
+    if (value == null) throw new Error(`Expected config value for '${key.toString()}' to be set`);
     return value;
   }
 }
