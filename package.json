@@ -46,5 +46,10 @@
   "engines": {
     "npm": ">=10.0.0",
     "node": ">= 20.0.0"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cloudwatch-logs": "^3.449.0",
+    "fast-safe-stringify": "^2.1.1",
+    "winston": "^3.11.0"
   }
 }
