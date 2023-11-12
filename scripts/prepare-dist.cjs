@@ -59,4 +59,5 @@ esbuild.build({
   format: 'cjs',
   target: 'es2020',
   outExtension: { '.js': '.cjs' },
+  external: Object.keys(packageJson.dependencies),
 });
