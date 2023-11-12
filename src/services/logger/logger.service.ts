@@ -17,6 +17,8 @@ import { consoleFormat, contextFormat } from './formats.logger';
  * Defining types
  */
 
+export type Logger = WinstonLogger;
+
 /**
  * Declaring the constants
  */
