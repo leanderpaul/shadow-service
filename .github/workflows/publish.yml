@@ -22,10 +22,14 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
           scope: '@leanderpaul'
 
-      - name: Installing dependencies & Building the application
-        run: |
-          npm install
-          npm run build
+      - name: Install dependencies
+        run: npm install
+
+      - name: Test the code
+        run: npm test
+
+      - name: Build package
+        run: npm run build
 
       - name: Publishing package
         run: cd dist && npm publish
