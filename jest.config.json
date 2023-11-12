@@ -1,0 +1,14 @@
+{
+  "detectOpenHandles": true,
+  "moduleFileExtensions": ["ts", "js"],
+  "moduleNameMapper": {
+    "@lib/(.*)": "<rootDir>/src/$1",
+    "@tests/(.*)": "<rootDir>/tests/$1"
+  },
+  "rootDir": ".",
+  "testEnvironment": "node",
+  "testRegex": ".spec.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  }
+}
