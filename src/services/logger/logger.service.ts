@@ -43,6 +43,7 @@ export class LoggerService {
 
     const Config = Utils.getGlobalRef('config');
     const nodeEnv = Config.get('app.env');
+    const logDir = Config.get('log.dir');
     const logFormat = format.combine(contextFormat(), format.errors({ stack: true }), format.json());
     this.instance = createWinstonLogger({ level: Config.get('log.level') });
 
@@ -55,8 +56,7 @@ export class LoggerService {
     }
 
     if (nodeEnv === 'production') this.instance.add(new CloudWatchTransport({ format: logFormat }));
-    else {
-      const logDir = Config.get('log.dir');
+    else if (logDir !== 'false') {
       try {
         fs.accessSync(logDir);
       } catch (err) {
