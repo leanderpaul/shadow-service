@@ -64,4 +64,15 @@ export class ErrorCode {
   static readonly MIG001 = new ErrorCode('MIG001', ErrorType.HTTP_ERROR, 'Migration not enabled');
   /** Migration is already running */
   static readonly MIG002 = new ErrorCode('MIG002', ErrorType.HTTP_ERROR, 'Migration is already running');
+
+  /*!
+   * List of all server related errors
+   */
+
+  /** Unexpected server error */
+  static readonly S001 = new ErrorCode('S001', ErrorType.SERVER_ERROR, 'Unexpected server error');
+  /** Not found */
+  static readonly S002 = new ErrorCode('S002', ErrorType.NOT_FOUND, 'Not found');
+  /** Invalid input */
+  static readonly S003 = new ErrorCode('S003', ErrorType.VALIDATION_ERROR, 'Invalid input');
 }
