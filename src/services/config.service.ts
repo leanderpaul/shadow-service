@@ -12,7 +12,7 @@ import { Utils } from '@lib/internal.utils';
  * Defining types
  */
 
-interface ConfigOptions {
+export interface ConfigOptions {
   envKey?: string;
   isProdRequired?: boolean;
   validateType?: 'number' | 'boolean';
@@ -22,13 +22,11 @@ interface ConfigOptions {
   transform?: (value: string) => any;
 }
 
-type NodeEnv = 'development' | 'production' | 'test';
+export type NodeEnv = 'development' | 'production' | 'test';
 
-type LogLevel = 'silly' | 'debug' | 'http' | 'info' | 'warn' | 'error';
+export type LogLevel = 'silly' | 'debug' | 'http' | 'info' | 'warn' | 'error';
 
-type Nullable<T> = T | null;
-
-export interface ConfigRecords extends Record<string, any> {
+export interface ConfigRecords {
   /** Application configs */
   'app.env': NodeEnv;
   'app.name': string;
@@ -38,7 +36,7 @@ export interface ConfigRecords extends Record<string, any> {
   'log.dir': string;
 
   /** Mail service configs */
-  'mail.sendgrid.apikey': Nullable<string>;
+  'mail.sendgrid.apikey'?: string;
 
   /** AWS configs */
   'aws.region': string;
@@ -50,10 +48,10 @@ export interface ConfigRecords extends Record<string, any> {
 /**
  * Declaring the constants
  */
-export class ConfigService<Configs extends ConfigRecords> {
+export class ConfigService<Configs extends ConfigRecords = ConfigRecords> {
   private readonly cache = new Map<keyof Configs, any>();
 
-  protected set(name: string, opts: ConfigOptions = {}): void {
+  protected set(name: keyof Configs, opts: ConfigOptions = {}): void {
     const envKey = opts.envKey ?? (name as string).toUpperCase().replace(/\./g, '_');
     let value = process.env[envKey]?.trim();
     if (!value) {
@@ -93,9 +91,9 @@ export class ConfigService<Configs extends ConfigRecords> {
     this.set('mail.sendgrid.apikey');
 
     this.set('aws.region', { defaultValue: 'ap-south-1' });
-    this.set('aws.cloudwatch.log.group', { defaultValue: defaultAppName });
-    this.set('aws.cloudwatch.log.stream', { defaultValue: os.networkInterfaces().eth0?.find(info => info.family === 'IPv4')?.address ?? 'unknown-ip' });
-    this.set('aws.cloudwatch.upload.rate', { defaultValue: '2000', validateType: 'number' });
+    this.set('aws.cloudwatch.log-group', { defaultValue: defaultAppName });
+    this.set('aws.cloudwatch.log-stream', { defaultValue: os.networkInterfaces().eth0?.find(info => info.family === 'IPv4')?.address ?? 'unknown-ip' });
+    this.set('aws.cloudwatch.upload-rate', { defaultValue: '2000', validateType: 'number' });
   }
 
   isProd(): boolean {

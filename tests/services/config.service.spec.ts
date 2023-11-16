@@ -42,13 +42,13 @@ describe('Config Service', () => {
     });
 
     it("should return the 'undefined' if the key is not found", () => {
-      expect(config.get('app.invalid')).toBeUndefined();
+      expect(config.get('mail.sendgrid.apikey')).toBeUndefined();
     });
   });
 
   describe('getOrThrow', () => {
     it('should throw an error if the key is not found', () => {
-      expect(() => config.getOrThrow('app.invalid')).toThrow();
+      expect(() => config.getOrThrow('mail.sendgrid.apikey')).toThrow();
     });
   });
 
