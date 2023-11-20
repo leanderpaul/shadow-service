@@ -54,6 +54,8 @@ export class ConfigService<Configs extends ConfigRecords = ConfigRecords> {
   protected set(name: keyof Configs, opts: ConfigOptions = {}): void {
     const envKey = opts.envKey ?? (name as string).toUpperCase().replace(/\./g, '_');
     let value = process.env[envKey]?.trim();
+    /** This is to handle issue in bun test (https://github.com/oven-sh/bun/issues/4118) */
+    if (envKey === 'NODE_ENV') value = process.env.NODE_ENV?.trim();
     if (!value) {
       if (this.isProd() && opts.isProdRequired) Utils.exit(`Environment Variable '${envKey}' not set`);
       else if (opts.defaultValue) value = opts.defaultValue;
