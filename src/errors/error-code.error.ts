@@ -16,6 +16,7 @@ export enum ErrorType {
   UNAUTHORIZED = 'UNAUTHORIZED',
   VALIDATION_ERROR = 'VALIDATION_ERROR',
   SERVER_ERROR = 'SERVER_ERROR',
+  CONFLICT = 'CONFLICT',
 }
 
 /**
@@ -28,6 +29,7 @@ const ERROR_STATUS_CODES: Record<ErrorType, number> = {
   [ErrorType.SERVER_ERROR]: 500,
   [ErrorType.UNAUTHORIZED]: 403,
   [ErrorType.VALIDATION_ERROR]: 400,
+  [ErrorType.CONFLICT]: 409,
 };
 
 export class ErrorCode {

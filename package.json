@@ -10,9 +10,9 @@
   "scripts": {
     "prepare": "husky install && ts-patch install -s",
     "clean": "rm -rf dist",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "lint": "eslint \"{src,test}/**/*.ts\"",
-    "lint:fix": "eslint \"{src,test}/**/*.ts\" --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "lint": "eslint \"{src,tests}/**/*.ts\"",
+    "lint:fix": "eslint \"{src,tests}/**/*.ts\" --fix",
     "prebuild": "npm run clean",
     "build": "tsc -p tsconfig.build.json",
     "postbuild": "node ./scripts/prepare-dist.cjs",
