@@ -6,7 +6,7 @@
  * Importing user defined packages
  */
 import { Utils } from '@lib/internal.utils';
-import { ConfigService, type ConfigRecords } from '@lib/services/config.service';
+import { type ConfigRecords, ConfigService } from '@lib/services/config.service';
 import { TestUtils } from '@tests/test.utils';
 
 /**
@@ -57,7 +57,6 @@ describe('Config Service', () => {
     afterAll(() => (process.env.NODE_ENV = 'test'));
 
     it("should throw an error if 'custom.key' is not provided in production", () => {
-      console.log(process.env.NODE_ENV);
       expect(() => new CustomConfigService()).toThrow();
     });
   });
