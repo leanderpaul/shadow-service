@@ -30,7 +30,7 @@ const MAX_RETRY_ATTEMPTS = 3;
 
 export abstract class MailService {
   private readonly mail: SendGridMail;
-  abstract readonly logger: Logger;
+  protected abstract readonly logger: Logger;
   private readonly defaultData: Record<string, JSONData> = {};
 
   private isEnabled = false;
@@ -59,8 +59,11 @@ export abstract class MailService {
     }
   }
 
-  protected appendDefaultData(data: Record<string, JSONData>): void {
-    Object.assign(this.defaultData, data);
+  protected appendDefaultData(key: string, data: JSONData): void;
+  protected appendDefaultData(data: Record<string, JSONData>): void;
+  protected appendDefaultData(keyOrData: string | Record<string, JSONData>, data?: JSONData): void {
+    const value = typeof keyOrData === 'string' ? { [keyOrData]: data } : keyOrData;
+    Object.assign(this.defaultData, value);
   }
 
   protected sendMail(mail: MailData): void {
