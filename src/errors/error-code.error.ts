@@ -28,7 +28,7 @@ const ERROR_STATUS_CODES: Record<ErrorType, number> = {
   [ErrorType.NOT_FOUND]: 404,
   [ErrorType.SERVER_ERROR]: 500,
   [ErrorType.UNAUTHORIZED]: 403,
-  [ErrorType.VALIDATION_ERROR]: 400,
+  [ErrorType.VALIDATION_ERROR]: 422,
   [ErrorType.CONFLICT]: 409,
 };
 
