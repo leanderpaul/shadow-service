@@ -1,6 +1,6 @@
 {
   "name": "@leanderpaul/shadow-service",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "type": "module",
   "private": true,
   "description": " Library containing code for all shadow microservices",
