@@ -81,4 +81,13 @@ export class ErrorCode {
   static readonly S002 = new ErrorCode('S002', ErrorType.NOT_FOUND, 'Not found');
   /** Invalid input */
   static readonly S003 = new ErrorCode('S003', ErrorType.VALIDATION_ERROR, 'Invalid input');
+
+  /*!
+   * List of all internal errors
+   */
+
+  /** Cache capacity must be less than 4294967295 */
+  static readonly IS001 = new ErrorCode('IS001', ErrorType.INTERNAL, 'Cache capacity must be less than 4294967295');
+  /** Cache capacity must be a positive number */
+  static readonly IS002 = new ErrorCode('IS002', ErrorType.INTERNAL, 'Cache capacity must be a positive number');
 }

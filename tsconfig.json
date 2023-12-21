@@ -26,7 +26,8 @@
     "moduleResolution": "node",
     "paths": {
       "@lib/*": ["src/*"],
-      "@tests/*": ["tests/*"]
+      "@tests/*": ["tests/*"],
+      "shadow-service": ["src/index.ts"]
     },
     "resolveJsonModule": true,
 

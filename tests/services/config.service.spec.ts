@@ -6,8 +6,8 @@
  * Importing user defined packages
  */
 import { Utils } from '@lib/internal.utils';
-import { type ConfigRecords, ConfigService } from '@lib/services/config.service';
 import { TestUtils } from '@tests/test.utils';
+import { type ConfigRecords, ConfigService } from 'shadow-service';
 
 /**
  * Defining types
