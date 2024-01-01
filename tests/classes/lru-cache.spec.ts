@@ -5,7 +5,7 @@
 /**
  * Importing user defined packages
  */
-import { ErrorCode, LRUCache } from 'shadow-service';
+import { InternalError, LRUCache } from 'shadow-service';
 
 /**
  * Defining types
@@ -20,11 +20,13 @@ describe('LRU Cache', () => {
 
   describe('init', () => {
     it('should throw an error if the capacity is less than or equal to 0', () => {
-      expect(() => new LRUCache(0)).toThrow(ErrorCode.IS002.getMessage());
+      const error = new InternalError('Cache capacity must be a positive number greater than 0');
+      expect(() => new LRUCache(0)).toThrow(error);
     });
 
     it('should throw an error if the capacity is more than the maximum limit', () => {
-      expect(() => new LRUCache(4294967297)).toThrow(ErrorCode.IS001.getMessage());
+      const error = new InternalError('Cache capacity must be less than 4294967295');
+      expect(() => new LRUCache(4294967297)).toThrow(error);
     });
 
     it('should initialize the cache with the given capacity', () => {
