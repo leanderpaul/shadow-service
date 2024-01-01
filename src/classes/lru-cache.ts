@@ -5,7 +5,7 @@
 /**
  * Importing user defined packages
  */
-import { AppError, ErrorCode } from '@lib/errors';
+import { InternalError } from '@lib/errors';
 
 /**
  * Defining types
@@ -36,7 +36,7 @@ export class LRUCache {
   private values: any[];
 
   constructor(private readonly capacity: number) {
-    if (capacity <= 0) throw new AppError(ErrorCode.IS002);
+    if (capacity <= 0) throw new InternalError('Cache capacity must be a positive number greater than 0');
 
     const TypedArray = LRUCache.getTypedArray(capacity);
     this.forward = new TypedArray(capacity);
@@ -52,7 +52,7 @@ export class LRUCache {
     if (maxIndex <= MAX_8BIT_INTEGER) return Uint8Array;
     if (maxIndex <= MAX_16BIT_INTEGER) return Uint16Array;
     if (maxIndex <= MAX_32BIT_INTEGER) return Uint32Array;
-    throw new AppError(ErrorCode.IS001);
+    throw new InternalError('Cache capacity must be less than 4294967295');
   }
 
   private splayOnTop(pointer: number): LRUCache {
