@@ -1,0 +1,6 @@
+<h1>Hello, {{username}}</h1>
+{{#includes roles "admin"}}
+  <h2>You are an admin</h2>
+{{else}}
+  <h2>You are an user</h2>
+{{/includes}}
